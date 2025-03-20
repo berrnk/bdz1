@@ -1,5 +1,5 @@
 ﻿using System;
-namespace FinancialAccounting.Application.Commands;
+namespace Accounting.Application.Commands;
 
 public interface ICommand
 {

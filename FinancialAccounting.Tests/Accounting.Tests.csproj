@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FinancialAccounting.Application\FinancialAccounting.Application.csproj" />
-    <ProjectReference Include="..\FinancialAccounting.Domain\FinancialAccounting.Domain.csproj" />
-    <ProjectReference Include="..\FinancialAccounting.Infrastructure\FinancialAccounting.Infrastructure.csproj" />
+    <ProjectReference Include="..\FinancialAccounting.Infrastructure\Accounting.Infrastructure.csproj" />
+    <ProjectReference Include="..\FinancialAccounting.Domain\Accounting.Domain.csproj" />
+    <ProjectReference Include="..\FinancialAccounting.Application\Accounting.Application.csproj" />
   </ItemGroup>
 </Project>

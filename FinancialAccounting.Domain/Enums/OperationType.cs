@@ -1,5 +1,5 @@
 ﻿using System;
-namespace FinancialAccounting.Domain.Enums;
+namespace Accounting.Domain.Enums;
 public enum OperationType { Income, Expense }
 
 

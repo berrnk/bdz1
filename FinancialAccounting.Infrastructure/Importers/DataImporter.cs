@@ -1,55 +1,54 @@
-﻿using FinancialAccounting.Domain.Entities;
-using FinancialAccounting.Infrastructure.Data;
+﻿using Accounting.Domain.Entities;
+using Accounting.Infrastructure.Data;
 
-namespace FinancialAccounting.Infrastructure.Importers
+namespace Accounting.Infrastructure.Importers
 {
     public abstract class DataImporter
     {
-        protected DataContext _dataContext;
+        protected DataContext dataContext;
 
-        protected DataImporter(DataContext dataContext)
+        protected DataImporter(DataContext context)
         {
-            _dataContext = dataContext;
+            dataContext = context;
         }
 
-        // Общая логика импорта: чтение файла, парсинг и сохранение
+        // Основной метод импорта: читает файл, обрабатывает содержимое и сохраняет данные.
         public void ImportData(string filePath)
         {
             try
             {
-                string fileContent = File.ReadAllText(filePath);
-                var data = ParseData(fileContent);
-                SaveData(data);
+                string content = File.ReadAllText(filePath);
+                var items = ParseData(content);
+                SaveData(items);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка импорта: " + ex.Message);
+                Console.WriteLine("Ошибка при импорте: " + ex.Message);
             }
         }
 
-        // Абстрактный метод для разбора содержимого файла – реализуется в наследниках
+        // Абстрактный метод для анализа и разбора содержимого файла. Реализуется в производных классах.
         protected abstract List<object> ParseData(string fileContent);
 
-        // Общий метод сохранения разобранных объектов в DataContext
-        protected virtual void SaveData(List<object> data)
+        // Метод для сохранения разобранных объектов в DataContext.
+        protected virtual void SaveData(List<object> items)
         {
-            foreach (var obj in data)
+            foreach (var item in items)
             {
-                if (obj is BankAccount account)
+                if (item is BankAccount account)
                 {
-                    _dataContext.BankAccounts.Add(account);
+                    dataContext.BankAccounts.Add(account);
                 }
-                else if (obj is Category category)
+                else if (item is Category category)
                 {
-                    _dataContext.Categories.Add(category);
+                    dataContext.Categories.Add(category);
                 }
-                else if (obj is Operation op)
+                else if (item is Operation op)
                 {
-                    _dataContext.Operations.Add(op);
+                    dataContext.Operations.Add(op);
                 }
             }
-            Console.WriteLine($"Импортировано объектов: {data.Count}");
+            Console.WriteLine($"Импортировано объектов: {items.Count}");
         }
     }
 }
-

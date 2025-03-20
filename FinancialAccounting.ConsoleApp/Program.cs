@@ -1,25 +1,24 @@
-﻿using FinancialAccounting.Application.Commands;
-using FinancialAccounting.Application.Facades;
-using FinancialAccounting.Domain.Enums;
-using FinancialAccounting.Infrastructure.Data;
-using FinancialAccounting.Infrastructure.Exporters;
-using FinancialAccounting.Infrastructure.Importers;
+﻿using Accounting.Application.Commands;
+using Accounting.Application.Facades;
+using Accounting.Domain.Enums;
+using Accounting.Infrastructure.Data;
+using Accounting.Infrastructure.Exporters;
+using Accounting.Infrastructure.Importers;
 using Microsoft.Extensions.DependencyInjection;
-using ICommand = FinancialAccounting.Application.Commands.ICommand;
+using ICommand = Accounting.Application.Commands.ICommand;
 
-namespace FinancialAccounting.ConsoleApp;
-
+namespace Accounting.ConsoleApp;
 class Program
 {
     static void Main(string[] args)
     {
-        // Настройка DI-контейнера
+        // Инициализация DI-контейнера для разрешения зависимостей.
         var serviceProvider = new ServiceCollection()
-            // Регистрируем единый экземпляр DataContext для всего приложения
+            // Регистрируем единичный экземпляр DataContext для всего приложения.
             .AddSingleton<DataContext>()
-            // FinancialFacade зависит от DataContext, поэтому регистрируем как Singleton
+            // Регистрируем FinancialFacade как Singleton, поскольку он использует DataContext.
             .AddSingleton<FinancialFacade>()
-            // Регистрируем команды, импортёры и экспортёры как Transient (если нужно)
+            // Регистрируем экспортёры и импортёры в виде Transient, если потребуется.
             .AddTransient<JsonExportVisitor>()
             .AddTransient<YamlExportVisitor>()
             .AddTransient<CsvExportVisitor>()
@@ -28,211 +27,208 @@ class Program
             .AddTransient<CsvDataImporter>()
             .BuildServiceProvider();
 
-        // Разрешаем зависимости из контейнера
+        // Извлекаем необходимые объекты из контейнера.
         var facade = serviceProvider.GetRequiredService<FinancialFacade>();
         var dataContext = serviceProvider.GetRequiredService<DataContext>();
 
-        // Запускаем главное меню приложения
-        RunMenu(facade, dataContext);
+        // Запуск основного меню приложения.
+        LaunchMenu(facade, dataContext);
     }
 
-    static void RunMenu(FinancialFacade facade, DataContext dataContext)
+    static void LaunchMenu(FinancialFacade facade, DataContext dataContext)
     {
-        bool exit = false;
-        while (!exit)
+        bool exitApp = false;
+        while (!exitApp)
         {
+            Console.WriteLine("\n\n*** Главное меню финансового учёта ***");
+            Console.WriteLine("1. Добавить новый счёт.");
+            Console.WriteLine("2. Изменить существующий счёт.");
+            Console.WriteLine("3. Удалить счёт.");
+            Console.WriteLine("4. Добавить новую категорию.");
+            Console.WriteLine("5. Изменить категорию.");
+            Console.WriteLine("6. Удалить категорию.");
+            Console.WriteLine("7. Добавить новую операцию.");
+            Console.WriteLine("8. Изменить операцию.");
+            Console.WriteLine("9. Удалить операцию.");
+            Console.WriteLine("10. Анализ: разница доходов и расходов.");
+            Console.WriteLine("11. Анализ: группировка операций по категориям.");
+            Console.WriteLine("12. Экспорт данных.");
+            Console.WriteLine("13. Импорт данных.");
+            Console.WriteLine("0. Завершить работу приложения.");
+            Console.Write("\nВыберите пункт меню: ");
+            string choice = Console.ReadLine();
 
-            Console.WriteLine("\n\nМодуль 'Учет финансов' - Главное меню");
-            Console.WriteLine("1. Создать счет");
-            Console.WriteLine("2. Редактировать счет");
-            Console.WriteLine("3. Удалить счет");
-            Console.WriteLine("4. Создать категорию");
-            Console.WriteLine("5. Редактировать категорию");
-            Console.WriteLine("6. Удалить категорию");
-            Console.WriteLine("7. Создать операцию");
-            Console.WriteLine("8. Редактировать операцию");
-            Console.WriteLine("9. Удалить операцию");
-            Console.WriteLine("10. Аналитика: Разница доходов и расходов");
-            Console.WriteLine("11. Аналитика: Группировка по категориям");
-            Console.WriteLine("12. Экспорт данных");
-            Console.WriteLine("13. Импорт данных");
-            Console.WriteLine("0. Выход\n\n");
-            Console.Write("Выберите опцию: ");
-            string option = Console.ReadLine();
-
-            switch (option)
+            switch (choice)
             {
                 case "1":
-                    CreateAccount(facade);
+                    AddAccount(facade);
                     break;
                 case "2":
-                    EditAccount(facade);
+                    ModifyAccount(facade);
                     break;
                 case "3":
-                    DeleteAccount(facade);
+                    RemoveAccount(facade);
                     break;
                 case "4":
-                    CreateCategory(facade);
+                    AddCategory(facade);
                     break;
                 case "5":
-                    EditCategory(facade);
+                    ModifyCategory(facade);
                     break;
                 case "6":
-                    DeleteCategory(facade);
+                    RemoveCategory(facade);
                     break;
                 case "7":
-                    CreateOperation(facade);
+                    AddOperation(facade);
                     break;
                 case "8":
-                    EditOperation(facade);
+                    ModifyOperation(facade);
                     break;
                 case "9":
-                    DeleteOperation(facade);
+                    RemoveOperation(facade);
                     break;
                 case "10":
-                    ShowIncomeExpenseDifference(facade);
+                    DisplayIncomeExpenseDifference(facade);
                     break;
                 case "11":
-                    ShowGroupedOperations(facade);
+                    DisplayGroupedOperations(facade);
                     break;
                 case "12":
-                    ExportData(facade);
+                    PerformDataExport(facade);
                     break;
                 case "13":
-                    ImportData(dataContext);
+                    PerformDataImport(dataContext);
                     break;
                 case "0":
-                    exit = true;
+                    exitApp = true;
                     break;
                 default:
-                    Console.WriteLine("Неверная опция. Нажмите любую клавишу для продолжения...\n\n");
+                    Console.WriteLine("Пункт меню не распознан. Попробуйте ещё раз.");
+                    Console.WriteLine("Нажмите любую клавишу для продолжения.");
                     Console.ReadKey();
                     break;
             }
         }
     }
 
-    static void CreateAccount(FinancialFacade facade)
+    static void AddAccount(FinancialFacade facade)
     {
-
-        Console.WriteLine("Создание нового счета");
-        Console.Write("Введите название счета: ");
-        string name = Console.ReadLine();
-        Console.Write("Введите начальный баланс: ");
-        string balanceInput = Console.ReadLine();
-        if (!decimal.TryParse(balanceInput, out decimal balance))
+        Console.WriteLine("\nДобавление нового банковского счёта.");
+        Console.Write("Укажите название счёта: ");
+        string accountName = Console.ReadLine();
+        Console.Write("Введите стартовый баланс: ");
+        string balanceStr = Console.ReadLine();
+        if (!decimal.TryParse(balanceStr, out decimal accountBalance))
         {
-            Console.WriteLine("Некорректный формат баланса. Пожалуйста, введите число.");
-            Console.WriteLine("Нажмите любую клавишу для продолжения...\n\n");
+            Console.WriteLine("Ошибка: неверный формат баланса. Введите числовое значение.");
+            Console.WriteLine("Нажмите любую клавишу для продолжения.");
             Console.ReadKey();
             return;
         }
 
-        // Применяем команду с декоратором для измерения времени выполнения
-        ICommand createAccountCmd = new CreateAccountCommand(facade, name, balance);
-        ICommand timedCmd = new TimeMeasuredCommandDecorator(createAccountCmd);
-        timedCmd.Execute();
+        // Применяем команду, обернув её декоратором для измерения времени выполнения.
+        ICommand addAccountCommand = new CreateAccountCommand(facade, accountName, accountBalance);
+        ICommand timedCommand = new TimeMeasuredCommandDecorator(addAccountCommand);
+        timedCommand.Execute();
 
-        Console.WriteLine("Нажмите любую клавишу для продолжения...\n\n");
+        Console.WriteLine("Нажмите любую клавишу для продолжения.");
         Console.ReadKey();
     }
 
-    static void CreateCategory(FinancialFacade facade)
+    static void AddCategory(FinancialFacade facade)
     {
-
-        Console.WriteLine("Создание категории");
+        Console.WriteLine("\nДобавление новой категории.");
         Console.Write("Введите название категории: ");
-        string name = Console.ReadLine();
-        Console.Write("Введите тип категории (Income/Expense): ");
-        string typeInput = Console.ReadLine();
-        if (!Enum.TryParse(typeInput, true, out CategoryType type))
+        string catName = Console.ReadLine();
+        Console.Write("Укажите тип категории (Income/Expense): ");
+        string catTypeInput = Console.ReadLine();
+        if (!Enum.TryParse(catTypeInput, true, out CategoryType catType))
         {
-            Console.WriteLine("Неверный тип. Используйте 'Income' или 'Expense'.");
+            Console.WriteLine("Ошибка: неверный тип. Используйте 'Income' или 'Expense'.");
             Console.ReadKey();
             return;
         }
         try
         {
-            var category = facade.CreateCategory(type, name);
-            Console.WriteLine("Категория создана: " + category);
+            var category = facade.CreateCategory(catType, catName);
+            Console.WriteLine("Создана категория: " + category);
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Ошибка: " + ex.Message);
+            Console.WriteLine("Произошла ошибка: " + ex.Message);
         }
-        Console.WriteLine("Нажмите любую клавишу для продолжения...\n\n");
+        Console.WriteLine("Нажмите любую клавишу для продолжения.");
         Console.ReadKey();
     }
 
-    static void CreateOperation(FinancialFacade facade)
+    static void AddOperation(FinancialFacade facade)
     {
-
-        Console.WriteLine("Создание операции");
-        Console.Write("Введите ID счета: ");
+        Console.WriteLine("\nДобавление новой операции.");
+        Console.Write("Введите ID счёта: ");
         string accountIdInput = Console.ReadLine();
         if (!long.TryParse(accountIdInput, out long accountId))
         {
-            Console.WriteLine("Некорректный формат ID счета. Пожалуйста, введите число.");
-            Console.WriteLine("Нажмите любую клавишу для продолжения...\n\n");
+            Console.WriteLine("Ошибка: неверный формат ID счёта. Введите число.");
+            Console.WriteLine("Нажмите любую клавишу для продолжения.");
             Console.ReadKey();
             return;
         }
         Console.Write("Введите ID категории: ");
-        string cateogoryIdInput = Console.ReadLine();
-        if (!long.TryParse(cateogoryIdInput, out long categoryId))
+        string categoryIdInput = Console.ReadLine();
+        if (!long.TryParse(categoryIdInput, out long categoryId))
         {
-            Console.WriteLine("Некорректный формат ID категории. Пожалуйста, введите число.");
-            Console.WriteLine("Нажмите любую клавишу для продолжения...\n\n");
+            Console.WriteLine("Ошибка: неверный формат ID категории. Введите число.");
+            Console.WriteLine("Нажмите любую клавишу для продолжения.");
             Console.ReadKey();
             return;
         }
-        Console.Write("Введите тип операции (Income/Expense): ");
-        string typeInput = Console.ReadLine();
-        if (!Enum.TryParse(typeInput, true, out OperationType opType))
+        Console.Write("Укажите тип операции (Income/Expense): ");
+        string opTypeInput = Console.ReadLine();
+        if (!Enum.TryParse(opTypeInput, true, out OperationType operationType))
         {
-            Console.WriteLine("Неверный тип операции.\n\n");
+            Console.WriteLine("Ошибка: неверный тип операции.");
             Console.ReadKey();
             return;
         }
         Console.Write("Введите сумму операции: ");
-        string amountInput = Console.ReadLine();
-        if (!decimal.TryParse(amountInput, out decimal amount))
+        string amountStr = Console.ReadLine();
+        if (!decimal.TryParse(amountStr, out decimal amount))
         {
-            Console.WriteLine("Некорректный формат суммы операции. Пожалуйста, введите число.");
-            Console.WriteLine("Нажмите любую клавишу для продолжения...\n\n");
+            Console.WriteLine("Ошибка: неверный формат суммы операции. Введите числовое значение.");
+            Console.WriteLine("Нажмите любую клавишу для продолжения.");
             Console.ReadKey();
             return;
         }
         Console.Write("Введите дату операции (например, 2025-03-14): ");
-        DateTime date = DateTime.Parse(Console.ReadLine());
+        DateTime opDate = DateTime.Parse(Console.ReadLine());
         Console.Write("Введите описание операции: ");
-        string description = Console.ReadLine();
+        string opDescription = Console.ReadLine();
         try
         {
-            var operation = facade.CreateOperation(opType, accountId, amount, date, description, categoryId);
-            Console.WriteLine("Операция создана: " + operation);
+            var operation = facade.CreateOperation(operationType, accountId, amount, opDate, opDescription, categoryId);
+            Console.WriteLine("Создана операция: " + operation);
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Ошибка: " + ex.Message);
+            Console.WriteLine("Произошла ошибка: " + ex.Message);
         }
-        Console.WriteLine("Нажмите любую клавишу для продолжения...\n\n");
+        Console.WriteLine("Нажмите любую клавишу для продолжения.");
         Console.ReadKey();
     }
 
-    static void EditAccount(FinancialFacade facade)
+    static void ModifyAccount(FinancialFacade facade)
     {
         Console.Clear();
-        Console.WriteLine("Редактирование счета");
+        Console.WriteLine("Изменение данных банковского счёта.");
 
         var accounts = facade.GetBankAccounts().ToList();
         if (accounts.Count == 0)
         {
-            Console.WriteLine("Нет созданных счетов.");
+            Console.WriteLine("Нет доступных счетов.");
             return;
         }
 
-        Console.WriteLine("Список счетов:");
+        Console.WriteLine("Доступные счета:");
         foreach (var account in accounts)
         {
             Console.WriteLine($"ID: {account.Id}, Название: {account.Name}, Баланс: {account.Balance}");
@@ -241,35 +237,35 @@ class Program
         long accountId;
         while (true)
         {
-            Console.Write("Введите ID счета для редактирования (или 'exit' для возврата): ");
+            Console.Write("Введите ID счёта для изменения (или 'exit' для отмены): ");
             string input = Console.ReadLine();
             if (input.Trim().ToLower() == "exit") return;
             if (!long.TryParse(input, out accountId))
             {
-                Console.WriteLine("Некорректный формат ID. Попробуйте снова.");
+                Console.WriteLine("Ошибка: неверный формат ID. Попробуйте ещё раз.");
                 continue;
             }
             if (!accounts.Any(a => a.Id == accountId))
             {
-                Console.WriteLine("Счет с таким ID не найден. Попробуйте снова.");
+                Console.WriteLine("Счёт с данным ID не найден. Попробуйте ещё раз.");
                 continue;
             }
             break;
         }
 
-        Console.Write("Введите новое название счета (или 'exit' для возврата): ");
+        Console.Write("Введите новое название счёта (или 'exit' для отмены): ");
         string newName = Console.ReadLine();
         if (newName.Trim().ToLower() == "exit") return;
 
         decimal newBalance;
         while (true)
         {
-            Console.Write("Введите новый баланс (или 'exit' для возврата): ");
-            string balInput = Console.ReadLine();
-            if (balInput.Trim().ToLower() == "exit") return;
-            if (!decimal.TryParse(balInput, out newBalance))
+            Console.Write("Введите новый баланс (или 'exit' для отмены): ");
+            string balanceInput = Console.ReadLine();
+            if (balanceInput.Trim().ToLower() == "exit") return;
+            if (!decimal.TryParse(balanceInput, out newBalance))
             {
-                Console.WriteLine("Некорректный формат баланса. Попробуйте снова.");
+                Console.WriteLine("Ошибка: неверный формат баланса. Попробуйте ещё раз.");
                 continue;
             }
             break;
@@ -278,27 +274,27 @@ class Program
         try
         {
             facade.EditBankAccount(accountId, newName, newBalance);
-            Console.WriteLine("Счет успешно изменен.");
+            Console.WriteLine("Счёт успешно обновлён.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Ошибка: " + ex.Message);
+            Console.WriteLine("Произошла ошибка: " + ex.Message);
         }
     }
 
-    static void DeleteAccount(FinancialFacade facade)
+    static void RemoveAccount(FinancialFacade facade)
     {
         Console.Clear();
-        Console.WriteLine("Удаление счета");
+        Console.WriteLine("Удаление банковского счёта.");
 
         var accounts = facade.GetBankAccounts().ToList();
         if (accounts.Count == 0)
         {
-            Console.WriteLine("Нет созданных счетов.");
+            Console.WriteLine("Счета отсутствуют.");
             return;
         }
 
-        Console.WriteLine("Список счетов:");
+        Console.WriteLine("Доступные счета:");
         foreach (var account in accounts)
         {
             Console.WriteLine($"ID: {account.Id}, Название: {account.Name}, Баланс: {account.Balance}");
@@ -307,17 +303,17 @@ class Program
         long accountId;
         while (true)
         {
-            Console.Write("Введите ID счета для удаления (или 'exit' для возврата): ");
+            Console.Write("Введите ID счёта для удаления (или 'exit' для отмены): ");
             string input = Console.ReadLine();
             if (input.Trim().ToLower() == "exit") return;
             if (!long.TryParse(input, out accountId))
             {
-                Console.WriteLine("Некорректный формат ID. Попробуйте снова.");
+                Console.WriteLine("Ошибка: неверный формат ID. Попробуйте ещё раз.");
                 continue;
             }
             if (!accounts.Any(a => a.Id == accountId))
             {
-                Console.WriteLine("Счет с таким ID не найден. Попробуйте снова.");
+                Console.WriteLine("Счёт с данным ID не найден. Попробуйте ещё раз.");
                 continue;
             }
             break;
@@ -326,27 +322,27 @@ class Program
         try
         {
             facade.DeleteBankAccount(accountId);
-            Console.WriteLine("Счет успешно удален.");
+            Console.WriteLine("Счёт успешно удалён.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Ошибка: " + ex.Message);
+            Console.WriteLine("Произошла ошибка: " + ex.Message);
         }
     }
 
-    static void EditCategory(FinancialFacade facade)
+    static void ModifyCategory(FinancialFacade facade)
     {
         Console.Clear();
-        Console.WriteLine("Редактирование категории");
+        Console.WriteLine("Изменение данных категории.");
 
         var categories = facade.GetCategories().ToList();
         if (categories.Count == 0)
         {
-            Console.WriteLine("Нет созданных категорий.");
+            Console.WriteLine("Нет доступных категорий.");
             return;
         }
 
-        Console.WriteLine("Список категорий:");
+        Console.WriteLine("Доступные категории:");
         foreach (var cat in categories)
         {
             Console.WriteLine($"ID: {cat.Id}, Название: {cat.Name}, Тип: {cat.Type}");
@@ -355,50 +351,50 @@ class Program
         long categoryId;
         while (true)
         {
-            Console.Write("Введите ID категории для редактирования (или 'exit' для возврата): ");
+            Console.Write("Введите ID категории для изменения (или 'exit' для отмены): ");
             string input = Console.ReadLine();
             if (input.Trim().ToLower() == "exit") return;
             if (!long.TryParse(input, out categoryId))
             {
-                Console.WriteLine("Некорректный формат ID. Попробуйте снова.");
+                Console.WriteLine("Ошибка: неверный формат ID. Попробуйте ещё раз.");
                 continue;
             }
             if (!categories.Any(c => c.Id == categoryId))
             {
-                Console.WriteLine("Категория с таким ID не найдена. Попробуйте снова.");
+                Console.WriteLine("Категория с данным ID не найдена. Попробуйте ещё раз.");
                 continue;
             }
             break;
         }
 
-        Console.Write("Введите новое название категории (или 'exit' для возврата): ");
+        Console.Write("Введите новое название категории (или 'exit' для отмены): ");
         string newName = Console.ReadLine();
         if (newName.Trim().ToLower() == "exit") return;
 
         try
         {
             facade.EditCategory(categoryId, newName);
-            Console.WriteLine("Категория успешно изменена.");
+            Console.WriteLine("Категория успешно обновлена.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Ошибка: " + ex.Message);
+            Console.WriteLine("Произошла ошибка: " + ex.Message);
         }
     }
 
-    static void DeleteCategory(FinancialFacade facade)
+    static void RemoveCategory(FinancialFacade facade)
     {
         Console.Clear();
-        Console.WriteLine("Удаление категории");
+        Console.WriteLine("Удаление категории.");
 
         var categories = facade.GetCategories().ToList();
         if (categories.Count == 0)
         {
-            Console.WriteLine("Нет созданных категорий.");
+            Console.WriteLine("Категории отсутствуют.");
             return;
         }
 
-        Console.WriteLine("Список категорий:");
+        Console.WriteLine("Доступные категории:");
         foreach (var cat in categories)
         {
             Console.WriteLine($"ID: {cat.Id}, Название: {cat.Name}, Тип: {cat.Type}");
@@ -407,17 +403,17 @@ class Program
         long categoryId;
         while (true)
         {
-            Console.Write("Введите ID категории для удаления (или 'exit' для возврата): ");
+            Console.Write("Введите ID категории для удаления (или 'exit' для отмены): ");
             string input = Console.ReadLine();
             if (input.Trim().ToLower() == "exit") return;
             if (!long.TryParse(input, out categoryId))
             {
-                Console.WriteLine("Некорректный формат ID. Попробуйте снова.");
+                Console.WriteLine("Ошибка: неверный формат ID. Попробуйте ещё раз.");
                 continue;
             }
             if (!categories.Any(c => c.Id == categoryId))
             {
-                Console.WriteLine("Категория с таким ID не найдена. Попробуйте снова.");
+                Console.WriteLine("Категория с данным ID не найдена. Попробуйте ещё раз.");
                 continue;
             }
             break;
@@ -430,23 +426,23 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Ошибка: " + ex.Message);
+            Console.WriteLine("Произошла ошибка: " + ex.Message);
         }
     }
 
-    static void EditOperation(FinancialFacade facade)
+    static void ModifyOperation(FinancialFacade facade)
     {
         Console.Clear();
-        Console.WriteLine("Редактирование операции");
+        Console.WriteLine("Изменение данных операции.");
 
         var operations = facade.GetOperations().ToList();
         if (operations.Count == 0)
         {
-            Console.WriteLine("Нет созданных операций.");
+            Console.WriteLine("Операции отсутствуют.");
             return;
         }
 
-        Console.WriteLine("Список операций:");
+        Console.WriteLine("Доступные операции:");
         foreach (var op in operations)
         {
             Console.WriteLine($"ID: {op.Id}, Тип: {op.Type}, Сумма: {op.Amount}, Дата: {op.Date.ToShortDateString()}, Описание: {op.Description}");
@@ -455,17 +451,17 @@ class Program
         long opId;
         while (true)
         {
-            Console.Write("Введите ID операции для редактирования (или 'exit' для возврата): ");
+            Console.Write("Введите ID операции для изменения (или 'exit' для отмены): ");
             string input = Console.ReadLine();
             if (input.Trim().ToLower() == "exit") return;
             if (!long.TryParse(input, out opId))
             {
-                Console.WriteLine("Некорректный формат ID. Попробуйте снова.");
+                Console.WriteLine("Ошибка: неверный формат ID. Попробуйте ещё раз.");
                 continue;
             }
             if (!operations.Any(o => o.Id == opId))
             {
-                Console.WriteLine("Операция с таким ID не найдена. Попробуйте снова.");
+                Console.WriteLine("Операция с данным ID не найдена. Попробуйте ещё раз.");
                 continue;
             }
             break;
@@ -474,12 +470,12 @@ class Program
         decimal newAmount;
         while (true)
         {
-            Console.Write("Введите новую сумму операции (или 'exit' для возврата): ");
-            string input = Console.ReadLine();
-            if (input.Trim().ToLower() == "exit") return;
-            if (!decimal.TryParse(input, out newAmount))
+            Console.Write("Введите новую сумму операции (или 'exit' для отмены): ");
+            string amountInput = Console.ReadLine();
+            if (amountInput.Trim().ToLower() == "exit") return;
+            if (!decimal.TryParse(amountInput, out newAmount))
             {
-                Console.WriteLine("Некорректный формат суммы. Попробуйте снова.");
+                Console.WriteLine("Ошибка: неверный формат суммы. Попробуйте ещё раз.");
                 continue;
             }
             break;
@@ -488,45 +484,45 @@ class Program
         DateTime newDate;
         while (true)
         {
-            Console.Write("Введите новую дату операции (формат: yyyy-MM-dd) (или 'exit' для возврата): ");
-            string input = Console.ReadLine();
-            if (input.Trim().ToLower() == "exit") return;
-            if (!DateTime.TryParse(input, out newDate))
+            Console.Write("Введите новую дату операции (формат: yyyy-MM-dd) (или 'exit' для отмены): ");
+            string dateInput = Console.ReadLine();
+            if (dateInput.Trim().ToLower() == "exit") return;
+            if (!DateTime.TryParse(dateInput, out newDate))
             {
-                Console.WriteLine("Некорректный формат даты. Попробуйте снова.");
+                Console.WriteLine("Ошибка: неверный формат даты. Попробуйте ещё раз.");
                 continue;
             }
             break;
         }
 
-        Console.Write("Введите новое описание операции (или 'exit' для возврата): ");
+        Console.Write("Введите новое описание операции (или 'exit' для отмены): ");
         string newDescription = Console.ReadLine();
         if (newDescription.Trim().ToLower() == "exit") return;
 
         try
         {
             facade.EditOperation(opId, newAmount, newDate, newDescription);
-            Console.WriteLine("Операция успешно изменена.");
+            Console.WriteLine("Операция успешно обновлена.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Ошибка: " + ex.Message);
+            Console.WriteLine("Произошла ошибка: " + ex.Message);
         }
     }
 
-    static void DeleteOperation(FinancialFacade facade)
+    static void RemoveOperation(FinancialFacade facade)
     {
         Console.Clear();
-        Console.WriteLine("Удаление операции");
+        Console.WriteLine("Удаление операции.");
 
         var operations = facade.GetOperations().ToList();
         if (operations.Count == 0)
         {
-            Console.WriteLine("Нет созданных операций.");
+            Console.WriteLine("Операции отсутствуют.");
             return;
         }
 
-        Console.WriteLine("Список операций:");
+        Console.WriteLine("Доступные операции:");
         foreach (var op in operations)
         {
             Console.WriteLine($"ID: {op.Id}, Тип: {op.Type}, Сумма: {op.Amount}, Дата: {op.Date.ToShortDateString()}, Описание: {op.Description}");
@@ -535,17 +531,17 @@ class Program
         long opId;
         while (true)
         {
-            Console.Write("Введите ID операции для удаления (или 'exit' для возврата): ");
+            Console.Write("Введите ID операции для удаления (или 'exit' для отмены): ");
             string input = Console.ReadLine();
             if (input.Trim().ToLower() == "exit") return;
             if (!long.TryParse(input, out opId))
             {
-                Console.WriteLine("Некорректный формат ID. Попробуйте снова.");
+                Console.WriteLine("Ошибка: неверный формат ID. Попробуйте ещё раз.");
                 continue;
             }
             if (!operations.Any(o => o.Id == opId))
             {
-                Console.WriteLine("Операция с таким ID не найдена. Попробуйте снова.");
+                Console.WriteLine("Операция с данным ID не найдена. Попробуйте ещё раз.");
                 continue;
             }
             break;
@@ -558,37 +554,36 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Ошибка: " + ex.Message);
+            Console.WriteLine("Произошла ошибка: " + ex.Message);
         }
     }
 
-    static void ShowIncomeExpenseDifference(FinancialFacade facade)
+    static void DisplayIncomeExpenseDifference(FinancialFacade facade)
     {
-
-        Console.WriteLine("Аналитика: Разница доходов и расходов");
-        Console.Write("Введите начальную дату (например, 2025-03-01): ");
-        DateTime startDate = DateTime.Parse(Console.ReadLine());
-        Console.Write("Введите конечную дату (например, 2025-03-31): ");
-        DateTime endDate = DateTime.Parse(Console.ReadLine());
-        decimal diff = facade.GetIncomeExpenseDifference(startDate, endDate);
-        Console.WriteLine("Разница доходов и расходов: " + diff);
-        Console.WriteLine("Нажмите любую клавишу для продолжения...");
+        Console.WriteLine("\nАнализ: разница между доходами и расходами.");
+        Console.Write("Введите дату начала периода (например, 2025-03-01): ");
+        DateTime startPeriod = DateTime.Parse(Console.ReadLine());
+        Console.Write("Введите дату окончания периода (например, 2025-03-31): ");
+        DateTime endPeriod = DateTime.Parse(Console.ReadLine());
+        decimal difference = facade.GetIncomeExpenseDifference(startPeriod, endPeriod);
+        Console.WriteLine("Разница доходов и расходов составляет: " + difference);
+        Console.WriteLine("Нажмите любую клавишу для продолжения.");
         Console.ReadKey();
     }
 
-    static void ShowGroupedOperations(FinancialFacade facade)
+    static void DisplayGroupedOperations(FinancialFacade facade)
     {
         Console.Clear();
-        Console.WriteLine("Группировка доходов и расходов по категориям");
+        Console.WriteLine("Анализ: группировка операций по категориям.");
 
-        var groups = facade.GroupOperationsByCategory();
-        if (groups.Count == 0)
+        var groupedData = facade.GroupOperationsByCategory();
+        if (groupedData.Count == 0)
         {
-            Console.WriteLine("Нет операций для группировки.");
+            Console.WriteLine("Нет операций для анализа.");
         }
         else
         {
-            foreach (var group in groups)
+            foreach (var group in groupedData)
             {
                 Console.WriteLine($"Категория: {group.Key}");
                 Console.WriteLine($"  Доходы: {group.Value.Income}");
@@ -597,79 +592,71 @@ class Program
             }
         }
 
-        Console.WriteLine("Нажмите любую клавишу для возврата в главное меню...");
+        Console.WriteLine("Нажмите любую клавишу, чтобы вернуться в меню.");
         Console.ReadKey();
     }
 
-
-    static void ExportData(FinancialFacade facade)
+    static void PerformDataExport(FinancialFacade facade)
     {
-
-        Console.WriteLine("Экспорт данных");
+        Console.WriteLine("Экспорт данных.");
         Console.WriteLine("Выберите формат экспорта:");
-        Console.WriteLine("1. CSV");
-        Console.WriteLine("2. JSON");
-        Console.WriteLine("3. YAML");
-        string formatOption = Console.ReadLine();
+        Console.WriteLine("1. CSV.");
+        Console.WriteLine("2. JSON.");
+        Console.WriteLine("3. YAML.");
+        string formatChoice = Console.ReadLine();
 
-        string accountsFilePath = "accounts";
-        string categoriesFilePath = "categories";
-        string operationsFilePath = "operations";
-        IExportVisitor visitor = null;
+        string pathAccounts = "accounts";
+        string pathCategories = "categories";
+        string pathOperations = "operations";
+        IExportVisitor exportVisitor = null;
 
-        switch (formatOption)
+        switch (formatChoice)
         {
             case "1":
-                visitor = new CsvExportVisitor();
-                accountsFilePath += ".csv";
-                categoriesFilePath += ".csv";
-                operationsFilePath += ".csv";
+                exportVisitor = new CsvExportVisitor();
+                pathAccounts += ".csv";
+                pathCategories += ".csv";
+                pathOperations += ".csv";
                 break;
             case "2":
-                visitor = new JsonExportVisitor();
-                accountsFilePath += ".json";
-                categoriesFilePath += ".json";
-                operationsFilePath += ".json";
+                exportVisitor = new JsonExportVisitor();
+                pathAccounts += ".json";
+                pathCategories += ".json";
+                pathOperations += ".json";
                 break;
             case "3":
-                visitor = new YamlExportVisitor();
-                accountsFilePath += ".yaml";
-                categoriesFilePath += ".yaml";
-                operationsFilePath += ".yaml";
+                exportVisitor = new YamlExportVisitor();
+                pathAccounts += ".yaml";
+                pathCategories += ".yaml";
+                pathOperations += ".yaml";
                 break;
-
-
         }
 
-        if (visitor == null)
+        if (exportVisitor == null)
         {
-            Console.WriteLine("Неверная опция.");
+            Console.WriteLine("Выбран неверный формат. Операция отменена.");
             Console.ReadKey();
             return;
         }
 
-
-        facade.ExportData(visitor);
-
-
-        visitor.SaveToFiles(accountsFilePath, categoriesFilePath, operationsFilePath);
-        Console.WriteLine("Нажмите любую клавишу для продолжения...");
+        facade.ExportData(exportVisitor);
+        exportVisitor.SaveToFiles(pathAccounts, pathCategories, pathOperations);
+        Console.WriteLine("Экспорт завершён. Нажмите любую клавишу для продолжения.");
         Console.ReadKey();
     }
 
-    static void ImportData(DataContext dataContext)
+    static void PerformDataImport(DataContext dataContext)
     {
-
-        Console.WriteLine("Импорт данных");
+        Console.WriteLine("Импорт данных.");
         Console.WriteLine("Выберите формат импорта:");
-        Console.WriteLine("1. CSV");
-        Console.WriteLine("2. JSON");
-        Console.WriteLine("3. YAML");
-        string formatOption = Console.ReadLine();
-        Console.Write("Введите путь к файлу: ");
+        Console.WriteLine("1. CSV.");
+        Console.WriteLine("2. JSON.");
+        Console.WriteLine("3. YAML.");
+        string formatChoice = Console.ReadLine();
+        Console.Write("Укажите путь к файлу: ");
         string filePath = Console.ReadLine();
 
-        DataImporter importer = formatOption switch
+        DataImporter importer = formatChoice switch
         {
             "1" => new CsvDataImporter(dataContext),
             "2" => new JsonDataImporter(dataContext),
@@ -679,7 +666,7 @@ class Program
 
         if (importer == null)
         {
-            Console.WriteLine("Неверная опция.");
+            Console.WriteLine("Выбран неверный формат. Операция отменена.");
             Console.ReadKey();
             return;
         }
@@ -690,9 +677,9 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Ошибка при импорте: " + ex.Message);
+            Console.WriteLine("Ошибка при импорте данных: " + ex.Message);
         }
-        Console.WriteLine("Нажмите любую клавишу для продолжения...");
+        Console.WriteLine("Импорт завершён. Нажмите любую клавишу для продолжения.");
         Console.ReadKey();
     }
 }

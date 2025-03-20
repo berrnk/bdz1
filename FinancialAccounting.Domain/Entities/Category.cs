@@ -1,6 +1,6 @@
-﻿using FinancialAccounting.Domain.Enums;
+﻿using Accounting.Domain.Enums;
 
-namespace FinancialAccounting.Domain.Entities;
+namespace Accounting.Domain.Entities;
 public class Category
 {
     public long Id { get; private set; }

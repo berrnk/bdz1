@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Globalization;
-using FinancialAccounting.Domain.Entities;
+using Accounting.Domain.Entities;
 
-namespace FinancialAccounting.Infrastructure.Exporters;
+namespace Accounting.Infrastructure.Exporters;
 
 public class YamlExportVisitor : IExportVisitor
 {
@@ -27,7 +27,7 @@ public class YamlExportVisitor : IExportVisitor
 
     public void SaveToFiles(string accountsFilePath, string categoriesFilePath, string operationsFilePath)
     {
-        // Формирование YAML для счетов
+        // Формирование YAML для счетов.
         var accountsYaml = new List<string>();
         accountsYaml.Add("Accounts:");
         foreach (var account in _accounts)
@@ -38,7 +38,7 @@ public class YamlExportVisitor : IExportVisitor
         }
         File.WriteAllLines(accountsFilePath, accountsYaml);
 
-        // Формирование YAML для категорий
+        // Формирование YAML для категорий.
         var categoriesYaml = new List<string>();
         categoriesYaml.Add("Categories:");
         foreach (var category in _categories)

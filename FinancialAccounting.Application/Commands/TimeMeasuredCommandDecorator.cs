@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace FinancialAccounting.Application.Commands
+namespace Accounting.Application.Commands
 {
     public class TimeMeasuredCommandDecorator : ICommand
     {

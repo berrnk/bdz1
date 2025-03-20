@@ -1,9 +1,9 @@
 ﻿using System;
-using FinancialAccounting.Domain.Entities;
 using System.Text.Json;
-using FinancialAccounting.Infrastructure.Data;
+using Accounting.Domain.Entities;
+using Accounting.Infrastructure.Data;
 
-namespace FinancialAccounting.Infrastructure.Importers
+namespace Accounting.Infrastructure.Importers
 {
     public class JsonDataImporter : DataImporter
     {
@@ -11,27 +11,20 @@ namespace FinancialAccounting.Infrastructure.Importers
 
         protected override List<object> ParseData(string fileContent)
         {
-            var result = new List<object>();
+            var items = new List<object>();
+            var wrapper = JsonSerializer.Deserialize<ImportWrapper>(fileContent);
+            if (wrapper.Accounts != null)
+                items.AddRange(wrapper.Accounts);
+            if (wrapper.Categories != null)
+                items.AddRange(wrapper.Categories);
+            if (wrapper.Operations != null)
+                items.AddRange(wrapper.Operations);
 
-            // Ожидаем, что JSON имеет вид:
-                // {
-                //   "Accounts": [ { ... }, ... ],
-                //   "Categories": [ { ... }, ... ],
-                //   "Operations": [ { ... }, ... ]
-                // }
-            var importWrapper = JsonSerializer.Deserialize<ImportWrapper>(fileContent);
-            if (importWrapper.Accounts != null)
-                result.AddRange(importWrapper.Accounts);
-            if (importWrapper.Categories != null)
-                result.AddRange(importWrapper.Categories);
-            if (importWrapper.Operations != null)
-                result.AddRange(importWrapper.Operations);
-
-            return result;
+            return items;
         }
     }
 
-    // Класс-обёртка для десериализации JSON
+    // Обёртка для десериализации JSON-структуры.
     public class ImportWrapper
     {
         public List<BankAccount> Accounts { get; set; }
@@ -39,4 +32,3 @@ namespace FinancialAccounting.Infrastructure.Importers
         public List<Operation> Operations { get; set; }
     }
 }
-

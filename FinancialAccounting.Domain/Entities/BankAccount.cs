@@ -1,4 +1,4 @@
-﻿namespace FinancialAccounting.Domain.Entities;
+﻿namespace Accounting.Domain.Entities;
 public class BankAccount
 {
     public long Id { get; private set; }

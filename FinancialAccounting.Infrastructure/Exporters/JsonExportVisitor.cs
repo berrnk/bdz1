@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text.Json;
-using FinancialAccounting.Domain.Entities;
+using Accounting.Domain.Entities;
 
-namespace FinancialAccounting.Infrastructure.Exporters
+namespace Accounting.Infrastructure.Exporters
 {
     public class JsonExportVisitor : IExportVisitor
     {

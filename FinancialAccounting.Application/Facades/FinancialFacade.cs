@@ -1,11 +1,11 @@
 ﻿using System;
-using FinancialAccounting.Domain.Entities;
-using FinancialAccounting.Domain.Enums;
-using FinancialAccounting.Domain.Factories;
-using FinancialAccounting.Infrastructure.Data;
-using FinancialAccounting.Infrastructure.Exporters;
+using Accounting.Domain.Entities;
+using Accounting.Domain.Enums;
+using Accounting.Domain.Factories;
+using Accounting.Infrastructure.Data;
+using Accounting.Infrastructure.Exporters;
 
-namespace FinancialAccounting.Application.Facades
+namespace Accounting.Application.Facades
 {
     public class FinancialFacade
     {
@@ -15,7 +15,7 @@ namespace FinancialAccounting.Application.Facades
             _dataContext = dataContext;
         }
 
-        // Методы для работы со счетами
+        // Методы для работы со счетами.
         public BankAccount CreateBankAccount(string name, decimal initialBalance)
         {
             var account = DomainFactory.CreateBankAccount(name, initialBalance);
@@ -119,7 +119,7 @@ namespace FinancialAccounting.Application.Facades
             return income - expense;
         }
 
-        // Группировка операций по категориям
+        // Группировка операций по категориям.
         public Dictionary<string, (decimal Income, decimal Expense)> GroupOperationsByCategory()
         {
             var result = new Dictionary<string, (decimal Income, decimal Expense)>();
@@ -141,7 +141,7 @@ namespace FinancialAccounting.Application.Facades
         }
 
 
-        // Экспорт данных с использованием паттерна Посетитель
+        // Экспорт данных с использованием паттерна Посетитель.
         public void ExportData(IExportVisitor visitor)
         {
             foreach (var account in _dataContext.BankAccounts)

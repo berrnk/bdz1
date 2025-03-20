@@ -1,7 +1,7 @@
 ﻿using System;
-using FinancialAccounting.Domain.Entities;
+using Accounting.Domain.Entities;
 
-namespace FinancialAccounting.Infrastructure.Exporters
+namespace Accounting.Infrastructure.Exporters
 {
     public interface IExportVisitor
     {

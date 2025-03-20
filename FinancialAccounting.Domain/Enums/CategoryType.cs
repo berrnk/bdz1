@@ -1,3 +1,3 @@
-﻿namespace FinancialAccounting.Domain.Enums;
+﻿namespace Accounting.Domain.Enums;
 public enum CategoryType { Income, Expense }
 

@@ -1,10 +1,10 @@
 ﻿using System;
-using FinancialAccounting.Domain.Entities;
-using FinancialAccounting.Domain.Enums;
 using System.Globalization;
-using FinancialAccounting.Infrastructure.Data;
+using Accounting.Domain.Entities;
+using Accounting.Domain.Enums;
+using Accounting.Infrastructure.Data;
 
-namespace FinancialAccounting.Infrastructure.Importers
+namespace Accounting.Infrastructure.Importers
 {
     public class YamlDataImporter : DataImporter
     {
@@ -12,81 +12,73 @@ namespace FinancialAccounting.Infrastructure.Importers
 
         protected override List<object> ParseData(string fileContent)
         {
-            var result = new List<object>();
-
-            // Разбиваем файл на строки
+            var parsedObjects = new List<object>();
             string[] lines = fileContent.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             string currentSection = "";
-            Dictionary<string, string> temp = null;
+            Dictionary<string, string> currentEntry = null;
 
-            var accounts = new List<Dictionary<string, string>>();
-            var categories = new List<Dictionary<string, string>>();
-            var operations = new List<Dictionary<string, string>>();
+            var accountEntries = new List<Dictionary<string, string>>();
+            var categoryEntries = new List<Dictionary<string, string>>();
+            var operationEntries = new List<Dictionary<string, string>>();
 
             foreach (var rawLine in lines)
             {
-                string line = rawLine.Trim();
+                var line = rawLine.Trim();
                 if (string.IsNullOrEmpty(line))
                     continue;
 
-                // Определяем название секции (Accounts, Categories, Operations)
+                // Определяем название секции.
                 if (!line.StartsWith("-") && line.EndsWith(":"))
                 {
-                    currentSection = line.Substring(0, line.Length - 1);
+                    currentSection = line.TrimEnd(':');
                     continue;
                 }
 
-                // Начало нового объекта
+                // Начало нового объекта.
                 if (line.StartsWith("-"))
                 {
-                    temp = new Dictionary<string, string>();
+                    currentEntry = new Dictionary<string, string>();
                     if (currentSection == "Accounts")
-                        accounts.Add(temp);
+                        accountEntries.Add(currentEntry);
                     else if (currentSection == "Categories")
-                        categories.Add(temp);
+                        categoryEntries.Add(currentEntry);
                     else if (currentSection == "Operations")
-                        operations.Add(temp);
+                        operationEntries.Add(currentEntry);
 
-                    // Если после '-' сразу идет пара ключ:значение
-                    string content = line.Substring(1).Trim();
+                    var content = line.Substring(1).Trim();
                     if (!string.IsNullOrEmpty(content))
                     {
                         var parts = content.Split(new[] { ':' }, 2);
                         if (parts.Length == 2)
-                        {
-                            temp[parts[0].Trim()] = parts[1].Trim().Trim('"');
-                        }
+                            currentEntry[parts[0].Trim()] = parts[1].Trim().Trim('"');
                     }
                 }
-                else if (temp != null)
+                else if (currentEntry != null)
                 {
                     var parts = line.Split(new[] { ':' }, 2);
                     if (parts.Length == 2)
-                    {
-                        temp[parts[0].Trim()] = parts[1].Trim().Trim('"');
-                    }
+                        currentEntry[parts[0].Trim()] = parts[1].Trim().Trim('"');
                 }
             }
 
-            // Создание объектов из полученных словарей
-
-            foreach (var dict in accounts)
+            // Создание объектов из разобранных данных.
+            foreach (var dict in accountEntries)
             {
                 long id = long.Parse(dict["Id"]);
                 string name = dict["Name"];
                 decimal balance = decimal.Parse(dict["Balance"], CultureInfo.InvariantCulture);
-                result.Add(new BankAccount(id, name, balance));
+                parsedObjects.Add(new BankAccount(id, name, balance));
             }
 
-            foreach (var dict in categories)
+            foreach (var dict in categoryEntries)
             {
                 long id = long.Parse(dict["Id"]);
                 string name = dict["Name"];
                 CategoryType type = (CategoryType)Enum.Parse(typeof(CategoryType), dict["Type"]);
-                result.Add(new Category(id, type, name));
+                parsedObjects.Add(new Category(id, type, name));
             }
 
-            foreach (var dict in operations)
+            foreach (var dict in operationEntries)
             {
                 long id = long.Parse(dict["Id"]);
                 OperationType opType = (OperationType)Enum.Parse(typeof(OperationType), dict["Type"]);
@@ -95,11 +87,10 @@ namespace FinancialAccounting.Infrastructure.Importers
                 string description = dict.ContainsKey("Description") ? dict["Description"] : "";
                 long categoryId = long.Parse(dict["CategoryId"]);
                 long bankAccountId = long.Parse(dict["BankAccountId"]);
-                result.Add(new Operation(id, opType, bankAccountId, amount, date, description, categoryId));
+                parsedObjects.Add(new Operation(id, opType, bankAccountId, amount, date, description, categoryId));
             }
 
-            return result;
+            return parsedObjects;
         }
     }
 }
-

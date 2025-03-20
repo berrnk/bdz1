@@ -1,7 +1,7 @@
 ﻿using System;
-using FinancialAccounting.Application.Facades;
+using Accounting.Application.Facades;
 
-namespace FinancialAccounting.Application.Commands
+namespace Accounting.Application.Commands
 {
     public class CreateAccountCommand : ICommand
     {

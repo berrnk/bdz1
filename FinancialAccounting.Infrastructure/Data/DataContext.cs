@@ -1,7 +1,7 @@
 ﻿using System;
-using FinancialAccounting.Domain.Entities;
+using Accounting.Domain.Entities;
 
-namespace FinancialAccounting.Infrastructure.Data
+namespace Accounting.Infrastructure.Data
 {
     public class DataContext
     {
@@ -9,7 +9,6 @@ namespace FinancialAccounting.Infrastructure.Data
         public List<Category> Categories { get; private set; } = new List<Category>();
         public List<Operation> Operations { get; private set; } = new List<Operation>();
 
-        // Здесь можно добавить методы синхронизации с реальной базой данных
     }
 }
 
