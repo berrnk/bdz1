@@ -104,7 +104,7 @@
 
 ### **4.1 Клонирование репозитория**  
 ```bash
-git clone https://github.com/M1steryO/FinancialAccounting.git
+git clone https://github.com/berrnk/FinancialAccounting.git
 ```
 ### **4.2 Переход в директорию проекта**  
 ```bash
